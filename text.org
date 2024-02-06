@@ -1,0 +1,39 @@
+* This is a test
+
+There are some paragraphs in it,
+spanning on multiple lines ! But there
+are also some different types of elements,
+such as structure templates:
+
+#+begin_example
+,* this is some org syntax inside an example block
+#+end_example
+
+You can write literals with the =:= character:
+    : this will appear as a litteral
+
+* Some interesting templates:
+
+First and foremost, there are source blocks:
+
+#+begin_src js
+  const x = (a)=>a*a
+  const y = (b)=>b<0?x(b+2*b):x(x(b))
+#+end_src
+
+And then quote ones :
+
+#+begin_quote
+
+This is a quote block
+
+#+end_quote
+
+** Some subtitle
+
+- This is a list that can have children
+  - children list element A
+  - children list element B
+- This is a second top-level list element
+- This is the last list element
+
