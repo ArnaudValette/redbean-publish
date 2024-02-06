@@ -1,0 +1,27 @@
+* Introduction
+
+[[https://redbean.dev/][readbean]] is an [[https://justine.lol/ape.html][actually portable executable]], 
+it consists in a webserver in a zip executable, it also embeds =Lua=, which means that you can program
+a parser that will transform markdown into html and have your blog served in a zip executable.
+
+I will build here a Lua module that will implement this idea.
+
+* Testing and building:
+
+#+begin_src bash
+  chmod +x redbean.com
+  zip redbean.com .init.lua
+  ./redbean.com -v
+#+end_src
+
+You should be able to see the tests results in the REPL.
+
+* Roadmap/Features:
+
+- [1/4]
+  - [x] Parses a subset of org
+  - [ ] Parses org files
+  - [ ] Converts org files to html
+  - [ ] Serves them to the world
+  - DONE
+
