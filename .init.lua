@@ -14,6 +14,7 @@ HidePath('/usr/share/ssl/')
 --  9 : begin center
 --  10 : unknown = empty
 --  11 : end template #+end_<whatever> (this is optimistic)
+-- 12 : literal
 
 -- type conditions
 hc = function (s) return string.sub(s,1,1)=='*' end -- Type reveal headings 
@@ -22,6 +23,7 @@ sc2 = function (s) return string.sub(s,1,2)=='  ' end -- double whitespaces (yes
 dashc = function (s) return string.sub(s,1,1)=='-' end -- single dash
 sTemp = function (s) return string.sub(s,1,8)=='#+begin_' end -- #+begin_
 eTemp = function (s) return string.sub(s,1,6)=='#+end_' end -- #+end
+litc = function (s) return string.sub(s,1,1)==':' end -- : litterally
 
 -- Chivalrous data structure
 Elem = function (s,l,t) return {text=s, level=l, type=t} end  -- {-} <- that's an helmet
@@ -45,12 +47,11 @@ sEqx = function (s,x) return string.sub(s, 1, sL(x) )==x end
 -- ;;
 --;;
 --
-
-paragraph = function (s) return sc1(s) and paragraph(strip(s)) or Elem(s,0,0) end -- (sic)
+-- CONTROL
+paragraph = function (s) return sc1(s) and paragraph(strip(s)) or litc(s) and Elem(strip(s), 0, 12) or Elem(s,0,0) end -- (sic)
 heading = function (s,l) return hc(s) and heading(strip(s),l+1) or Elem(strip(s),l,1)  end
 list = function (s,l) return Elem(s,l,2) end  
 space = function (s,l) return sc2(s) and space(strip(s,1),l+1) or dashc(s) and list(strip(s,1),l) or paragraph(s) end
-template = function (s,t) return Elem(strip(s,sL(t)),0,3) end
 
 function sTemplate (s)
 	arr = {"src", "verse", "quote", "export","example","comment","center"}
@@ -66,7 +67,11 @@ function eTemplate (s)
 	return Elem(s,0,11) 
 end
 
-parse = function (s) return hc(s) and heading(strip(s),1) or sTemp(s) and sTemplate(strip(s,7)) or eTemp(s) and eTemplate(strip(s,5)) or space(s,0) end
+-- PARSE
+handleH = function (s) return hc(s) and heading(strip(s),1) end -- HEADINGS
+handleT = function (s) return sTemp(s) and sTemplate(strip(s,7)) end -- BEGIN_
+handleE = function (s) return eTemp(s) and eTemplate(strip(s,5)) end -- END_
+parse = function (s) return handleH(s) or handleT(s) or handleE(s) or space(s,0) end
 
 -- TESTING
 -- any of these should be true
