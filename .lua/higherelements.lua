@@ -54,5 +54,6 @@ local parse = function (s) return handleH(s) or handleT(s) or handleE(s) or spac
 
 return {
    parse=parse,
-   types=types
+   types=types,
+   Elem=Elem
 }

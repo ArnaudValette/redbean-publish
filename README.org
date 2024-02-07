@@ -18,9 +18,9 @@ You should be able to see the tests results in the REPL.
 
 * Roadmap/Features:
 
-- [1/4]
-  - [x] Parses a subset of org
-  - [ ] Parses org files
+- [2/4]
+  - [X] Parses a subset of org
+  - [X] Parses org files
   - [ ] Converts org files to html
   - [ ] Serves them to the world
   - DONE

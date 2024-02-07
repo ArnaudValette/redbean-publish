@@ -1,8 +1,8 @@
 * This is a test
 
-There are some paragraphs in it,
+There are some /paragraphs/ in it,
 spanning on multiple lines ! But there
-are also some different types of elements,
+are also some different types of *elements*,
 such as structure templates:
 
 #+begin_example
@@ -37,3 +37,10 @@ This is a quote block
 - This is a second top-level list element
 - This is the last list element
 
+* Lesser elements
+
+This implementation supports links,
+images (at least they are parsed), and text formatting
+such as /italic/ =verbatim= ~code~ *bold* _underline_ 
+
+Here is a link : [[https://redbean.dev/][redbean]]
