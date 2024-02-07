@@ -2,6 +2,8 @@
 -- (setq lua-imenu-generic-expression `(("Sections" "^--[[:space:]][0-9]+\\.[[:space:]][A-Z]+.*" 0)))
 -- (setq imenu-generic-expression lua-imenu-generic-expression)
 -- (imenu--make-index-alist)
+local hE = require "higherelements"
+local testing = require "testing"
 
 -- special script called by main redbean process at startup
 HidePath('/usr/share/zoneinfo/')
@@ -15,7 +17,6 @@ sEqx = function (s,x) return string.sub(s, 1, sL(x) )==x end
 
 
 -- 2. MAIN
-local hE = require "higherelements"
 
 runL = function (s) return hE.parse(s) end
 function printFile(path)
@@ -43,5 +44,4 @@ function printTable(t, i)
 end
 
 -- 4. TESTING
-local testing = require "testing"
 testing.test(hE.parse)
