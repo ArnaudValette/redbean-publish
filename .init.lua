@@ -1,3 +1,6 @@
+-- special script called by main redbean process at startup
+HidePath('/usr/share/zoneinfo/')
+HidePath('/usr/share/ssl/')
 -- -- ;; So you can navigate;
 -- (setq lua-imenu-generic-expression `(("Sections" "^--[[:space:]][0-9]+\\.[[:space:]][A-Z]+.*" 0)))
 -- (setq imenu-generic-expression lua-imenu-generic-expression)
@@ -5,9 +8,6 @@
 local hE = require "higherelements"
 local testing = require "testing"
 
--- special script called by main redbean process at startup
-HidePath('/usr/share/zoneinfo/')
-HidePath('/usr/share/ssl/')
 
 
 -- 1. LIB
