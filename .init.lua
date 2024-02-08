@@ -20,19 +20,6 @@ if IsDaemon() then -- call it production mode
   ProgramPidPath('/var/run/redbean.pid')
 end
 
-function OnHttpRequest()
-  Write('<p>Hello, World</p>')
-  -- path = GetPath()
-  -- if path == '/favicon.ico' or
-  -- path == '/site.webmanifest' or
-  -- path == '/favicon-16x16.png' or
-  -- path == '/favicon-32x32.png' or
-  -- path == '/apple-touch-icon' then
-    -- SetLogLevel(kLogWarn)
-  -- end
-  -- Route()
-  -- SetHeader('Content-Language', 'en-US')
-end
 
 HidePath('/usr/share/zoneinfo/')
 HidePath('/usr/share/ssl/')
@@ -53,24 +40,130 @@ sEqx = function (s,x) return string.sub(s, 1, sL(x) )==x end
 
 -- 2. MAIN
 
-function handleSurr(t,txt)
-   return "<p>" .. txt .. "</p>"
+surr={
+   "span",
+   "h",
+   "li",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+}
+surrEnd={
+   "span",
+   "h",
+   "li",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+   "span",
+}
+function handleSurr(t,txt,l)
+   rest=""
+   if t==1 then rest = "" .. l end
+   return "<"..surr[t+1].. rest..">" .. txt .. "</"..surrEnd[t+1].. rest..">"
 end
 
 runL = function (s) return hE.parse(s) end
+
+function escape(s)
+   local entities = {
+        ["&"] = "&amp;",
+        ['"'] = "&quot;",
+        ["'"] = "&apos;",
+        ["<"] = "&lt;",
+        [">"] = "&gt;"
+    }
+    
+    return s:gsub("[&\"'<>]", function(c) return entities[c] end)
+end
+
+
+opening={
+   "<p>",
+   "",
+   "<ul>",
+   "<pre>",
+   "<div class='verse'>",
+   "<div class='quote'>",
+   "<div class='export'>",
+   "<div class='example'>",
+   "<div class='comment'>",
+   "<div class='center'>",
+   "<div class='empty'>",
+   "<div class='empty'>",
+   "<div class='literal'>",
+}
+closing={
+   "</p>",
+   "",
+   "</ul>",
+   "</pre>",
+   "</div>",
+   "</div>",
+   "</div>",
+   "</div>",
+   "</div>",
+   "</div>",
+   "</div>",
+   "</div>",
+   "</div>",
+}
 function printFile(path)
    file=io.open(path, "r")
    i=0
+   mode=-1
+   level=0
+   html = ""
+   htmls={}
+   metaHtmls=0
    if file then
       for line in file:lines() do
+         parsed=''
          res= runL(line)
-         text = handleSurr(res.type, lE.parse(res.text))
-         print(text)
+         if res.type == 1 and sL(html)>0 then
+            table.insert(htmls, html .. closing[mode > -1 and mode + 1 or 2])
+            metaHtmls = metaHtmls + 1
+            html = opening[res.type+1] 
+            level=0
+            mode=1
+         elseif (not (mode == res.type)) then
+            -- we change modes
+            parsed = closing[mode > - 1 and mode + 1 or 2] .. opening[res.type+1]
+            mode = res.type
+         end
+         if res.type == 2 then
+            if res.level > level then
+               parsed=parsed.."<ul>"
+               level = res.level
+            elseif res.level < level then
+               parsed=parsed.."</ul>"
+               level=res.level
+            end
+         end
+         parsed= parsed .. handleSurr(res.type, lE.parse(escape(res.text)), res.level)
+         html = html .. parsed
          i=i+1
       end
+      html = html .. closing[mode+1]
+      table.insert(htmls, html)
       file:close()
+      return htmls
    else
       print("Could not open the file")
+      return "<p>not found</p>"
    end
 end
 
@@ -84,10 +177,46 @@ function printTable(t, i)
    print("--------------------")
 end
 
+style=[[
+<style>
+body, main, h1, h2, h3, h4, h5, h6, h7, h8, h9, p, span, div, ul, li{
+   padding:0;
+   margin:0;
+   font-family: sans-serif;
+}
+</style>
+]]
+function htmlify(s)
+   return [[
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset='utf-8'>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<meta name='viewport' content='width=device-with; initial-scale=1.0'>
+<title>valettearnaud</title>
+</head>
+<body>
+<main>
+]] .. s[1]..[[</main></body>]]..style..[[</html>]]
+end
+
 -- 4. TESTING
 testing.test(hE.parse)
-printFile('text.org')
+page = htmlify(printFile('text.org'))
 
+function OnHttpRequest()
+  path = GetPath()
+  if path == '/favicon.ico' or
+  path == '/site.webmanifest' or
+  path == '/favicon-16x16.png' or
+  path == '/favicon-32x32.png' or
+  path == '/apple-touch-icon' then
+    SetLogLevel(kLogWarn)
+  end
+  Write(page)
+  SetHeader('Content-Language', 'en-US')
+end
 
 -- important :
 -- Emphasis and Monospace: *bold*, /italic/, _underline_, =verbatim=, ~code~
@@ -100,3 +229,4 @@ printFile('text.org')
 -- Properties: :PROPERTIES: block within a headline
 -- LaTeX fragments: \(formula\) or \[formula\] for inline and block, respectively
 -- Macros: {{{macro(args)}}} 
+
