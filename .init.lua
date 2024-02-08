@@ -1,4 +1,3 @@
--- special script called by main redbean process at startup
 function Slurp(path)
   local file, err = io.open(path, "r")
   if not file then return nil, err end
@@ -23,13 +22,13 @@ end
 
 HidePath('/usr/share/zoneinfo/')
 HidePath('/usr/share/ssl/')
--- -- ;; So you can navigate;
--- (setq lua-imenu-generic-expression `(("Sections" "^--[[:space:]][0-9]+\\.[[:space:]][A-Z]+.*" 0)))
--- (setq imenu-generic-expression lua-imenu-generic-expression)
--- (imenu--make-index-alist)
+
 local hE = require "higherelements"
 local lE = require "lesserelements"
 local testing = require "testing"
+local const = require "constants"
+local escape = require "html".escape
+local htmlify = require "html".htmlify
 
 
 -- 1. LIB
@@ -39,88 +38,14 @@ sEqx = function (s,x) return string.sub(s, 1, sL(x) )==x end
 
 
 -- 2. MAIN
-
-surr={
-   "span",
-   "h",
-   "li",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-}
-surrEnd={
-   "span",
-   "h",
-   "li",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-   "span",
-}
 function handleSurr(t,txt,l)
    rest=""
    if t==1 then rest = "" .. l end
-   return "<"..surr[t+1].. rest..">" .. txt .. "</"..surrEnd[t+1].. rest..">"
+   return "<".. const.sB[t+1].. rest..">" .. txt .. "</".. const.sE[t+1].. rest..">"
 end
 
 runL = function (s) return hE.parse(s) end
 
-function escape(s)
-   local entities = {
-        ["&"] = "&amp;",
-        ['"'] = "&quot;",
-        ["'"] = "&apos;",
-        ["<"] = "&lt;",
-        [">"] = "&gt;"
-    }
-    
-    return s:gsub("[&\"'<>]", function(c) return entities[c] end)
-end
-
-
-opening={
-   "<p>",
-   "",
-   "<ul>",
-   "<pre>",
-   "<div class='verse'>",
-   "<div class='quote'>",
-   "<div class='export'>",
-   "<div class='example'>",
-   "<div class='comment'>",
-   "<div class='center'>",
-   "<div class='empty'>",
-   "<div class='empty'>",
-   "<div class='literal'>",
-}
-closing={
-   "</p>",
-   "",
-   "</ul>",
-   "</pre>",
-   "</div>",
-   "</div>",
-   "</div>",
-   "</div>",
-   "</div>",
-   "</div>",
-   "</div>",
-   "</div>",
-   "</div>",
-}
 function printFile(path)
    file=io.open(path, "r")
    i=0
@@ -134,14 +59,14 @@ function printFile(path)
          parsed=''
          res= runL(line)
          if res.type == 1 and sL(html)>0 and res.level == 1 then
-            table.insert(htmls, html .. closing[mode > -1 and mode + 1 or 2])
+            table.insert(htmls, html .. const.cT[mode > -1 and mode + 1 or 2])
             metaHtmls = metaHtmls + 1
-            html = opening[res.type+1] 
+            html = const.oT[res.type+1] 
             level=0
             mode=1
          elseif (not (mode == res.type)) then
             -- we change modes
-            parsed = closing[mode > - 1 and mode + 1 or 2] .. opening[res.type+1]
+            parsed = const.cT[mode > - 1 and mode + 1 or 2] .. const.oT[res.type+1]
             mode = res.type
          end
          if res.type == 2 then
@@ -157,7 +82,7 @@ function printFile(path)
          html = html .. parsed
          i=i+1
       end
-      html = html .. closing[mode+1]
+      html = html .. const.cT[mode+1]
       table.insert(htmls, html)
       file:close()
       return htmls
@@ -167,42 +92,6 @@ function printFile(path)
    end
 end
 
--- 3. DEBUGGING
-function printTable(t, i)
-   print("--------------------")
-   print("Element number : ", i)
-   print("Type : ", hE.types[t.type+1])
-   print("Level : ", t.level)
-   print("Text : ", t.text)
-   print("--------------------")
-end
-
-style=[[
-<style>
-body, main, h1, h2, h3, h4, h5, h6, h7, h8, h9, p, span, div, ul, li{
-   padding:0;
-   margin:0;
-   font-family: sans-serif;
-}
-</style>
-]]
-function htmlify(s)
-   return [[
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset='utf-8'>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<meta name='viewport' content='width=device-with; initial-scale=1.0'>
-<title>valettearnaud</title>
-</head>
-<body>
-<main>
-]] .. s[2]..[[</main></body>]]..style..[[</html>]]
-end
-
--- 4. TESTING
-testing.test(hE.parse)
 page = htmlify(printFile('text.org'))
 
 function OnHttpRequest()
@@ -218,15 +107,4 @@ function OnHttpRequest()
   SetHeader('Content-Language', 'en-US')
 end
 
--- important :
--- Emphasis and Monospace: *bold*, /italic/, _underline_, =verbatim=, ~code~
--- Links: [[link][description]] or
--- Images: [[link]]
--- not urgent :
--- Footnotes: [fn:label] for definition, fn:label for reference
--- Timestamps: <YYYY-MM-DD Day> for dates, <YYYY-MM-DD Day HH:MM> for date and time
--- Tags: :tag1:tag2: at the end of headlines
--- Properties: :PROPERTIES: block within a headline
--- LaTeX fragments: \(formula\) or \[formula\] for inline and block, respectively
--- Macros: {{{macro(args)}}} 
-
+--testing.test(hE.parse)

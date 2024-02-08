@@ -79,6 +79,16 @@ local function test(parse)
    print(test13.level==0)
 end
 
+function printTable(t, i)
+   print("--------------------")
+   print("Element number : ", i)
+   print("Type : ", hE.types[t.type+1])
+   print("Level : ", t.level)
+   print("Text : ", t.text)
+   print("--------------------")
+end
+
 return {
-   test = test
+   test = test,
+   printTable= printTable
 }
