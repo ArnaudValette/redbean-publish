@@ -133,7 +133,7 @@ function printFile(path)
       for line in file:lines() do
          parsed=''
          res= runL(line)
-         if res.type == 1 and sL(html)>0 then
+         if res.type == 1 and sL(html)>0 and res.level == 1 then
             table.insert(htmls, html .. closing[mode > -1 and mode + 1 or 2])
             metaHtmls = metaHtmls + 1
             html = opening[res.type+1] 
@@ -198,7 +198,7 @@ function htmlify(s)
 </head>
 <body>
 <main>
-]] .. s[1]..[[</main></body>]]..style..[[</html>]]
+]] .. s[2]..[[</main></body>]]..style..[[</html>]]
 end
 
 -- 4. TESTING
