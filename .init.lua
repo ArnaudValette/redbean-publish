@@ -1,4 +1,40 @@
 -- special script called by main redbean process at startup
+function Slurp(path)
+  local file, err = io.open(path, "r")
+  if not file then return nil, err end
+  local content = file:read("*a") -- Read the entire file content
+  file:close()
+  return content
+end
+
+ProgramPrivateKey(Slurp('/etc/letsencrypt/live/redbean-ecdsa/privkey.pem'))
+ProgramCertificate(Slurp('/etc/letsencrypt/live/redbean-ecdsa/fullchain.pem'))
+ProgramPrivateKey(Slurp('/etc/letsencrypt/live/redbean-rsa/privkey.pem'))
+ProgramCertificate(Slurp('/etc/letsencrypt/live/redbean-rsa/fullchain.pem'))
+
+if IsDaemon() then 
+  ProgramUid(1000)
+  ProgramGid(1001)
+  ProgramPort(80)
+  ProgramPort(443)
+  ProgramLogPath('/var/log/redbean.log')
+  ProgramPidPath('/var/run/redbean.pid')
+end
+
+function OnHttpRequest()
+  Write('<p>Hello, World</p>')
+  -- path = GetPath()
+  -- if path == '/favicon.ico' or
+  -- path == '/site.webmanifest' or
+  -- path == '/favicon-16x16.png' or
+  -- path == '/favicon-32x32.png' or
+  -- path == '/apple-touch-icon' then
+    -- SetLogLevel(kLogWarn)
+  -- end
+  -- Route()
+  -- SetHeader('Content-Language', 'en-US')
+end
+
 HidePath('/usr/share/zoneinfo/')
 HidePath('/usr/share/ssl/')
 -- -- ;; So you can navigate;
