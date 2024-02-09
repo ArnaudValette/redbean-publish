@@ -1,3 +1,5 @@
+local navcss =require "css".navcss
+local pagecss =require "css".pagecss
 function escape(s)
    local entities = {
         ["&"] = "&amp;",
@@ -17,6 +19,7 @@ body, main, h1, h2, h3, h4, h5, h6, h7, h8, h9, p, span, div, ul, li{
    margin:0;
    font-family: sans-serif;
 }
+]]..navcss .. pagecss.. [[
 </style>
 ]]
 
@@ -32,7 +35,7 @@ function htmlify(s)
 </head>
 <body>
 <main>
-]] .. s[2]..[[</main></body>]]..style..[[</html>]]
+]] .. s..[[</main></body>]]..style..[[</html>]]
 end
 
 

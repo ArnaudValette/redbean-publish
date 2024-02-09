@@ -1,4 +1,8 @@
 navcss = [[
+nav{
+   display: flex;
+   flex-direction:column;
+}
 ]]
 
 pagecss= [[

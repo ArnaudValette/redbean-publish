@@ -104,22 +104,27 @@ end
 pages = printFile('text.org')
 navigation = nav(pages)
 
+routein=function(p,l) return not not p[l] end
 function OnHttpRequest()
   path = GetPath()
-  if path == '/favicon.ico' or
+  p= strip(""..path)
+  if path == '/' then
+     --Route()
+     Write(htmlify(navigation))
+  elseif routein(pages,p) then
+     Write(htmlify(route(pages,p)))
+  end
+  if path == '/redbean.png' or
+  path == '/favicon.ico' or
   path == '/site.webmanifest' or
   path == '/favicon-16x16.png' or
   path == '/favicon-32x32.png' or
   path == '/apple-touch-icon' then
     SetLogLevel(kLogWarn)
-  end
-  if path == '/' then
-     Write(navigation)
-  else
-     p = strip("" .. path)
-     Write(route(pages,p))
+    ServeAsset("/favicon.ico")
   end
   SetHeader('Content-Language', 'en-US')
+  --Route()
 end
 
 --testing.test(hE.parse)
