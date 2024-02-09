@@ -46,46 +46,51 @@ end
 
 runL = function (s) return hE.parse(s) end
 
+function state()
+   return {m=-1,l=0,xml="",acc={}}
+end
+
+notFirstH = function (e, st) return e.type==1 and sL(st.xml)>0 and e.level==1 end
+closingTag= function (st) return mode >= 0 and const.cT[mode+1] or "" end
+push = function (st) return table.insert(st.acc, st.xml .. closingTag(st)) end
+newEntry = function (st, r) return {m=1, l=0, xml=const.oT[r.type+1],acc=st.acc} end
+diff = function (a,b) return (not (a == b)) end
+
 function printFile(path)
    file=io.open(path, "r")
-   i=0
+   st = state()
+      --{m=-1,l=0,xml="",acc={}}
    mode=-1
    level=0
    html = ""
    htmls={}
-   metaHtmls=0
    if file then
       for line in file:lines() do
          parsed=''
          res= runL(line)
-         if res.type == 1 and sL(html)>0 and res.level == 1 then
-            table.insert(htmls, html .. const.cT[mode > -1 and mode + 1 or 2])
-            metaHtmls = metaHtmls + 1
-            html = const.oT[res.type+1] 
-            level=0
-            mode=1
-         elseif (not (mode == res.type)) then
-            -- we change modes
-            parsed = const.cT[mode > - 1 and mode + 1 or 2] .. const.oT[res.type+1]
-            mode = res.type
+         if notFirstH(res, st) then -- if new heading => new entry
+            push(st)
+            st = newEntry(st, res) 
+         elseif diff(st.m, res.type) then -- if new node type => commit previous node
+            parsed = closingTag(st) .. const.oT[res.type+1] -- close prev tag, open next one
+            st.m = res.type  
          end
-         if res.type == 2 then
-            if res.level > level then
+         if res.type == 2 then -- if node = list
+            if res.level > st.l then -- if list level > prev List level 
                parsed=parsed.."<ul>"
-               level = res.level
-            elseif res.level < level then
-               parsed=parsed.."</ul>"
-               level=res.level
+               st.l = res.level
+            elseif res.level < st.l then -- if list level < prev list level
+               parsed= parsed.."</ul>"
+               st.l = res.level
             end
          end
          parsed= parsed .. handleSurr(res.type, lE.parse(escape(res.text)), res.level)
-         html = html .. parsed
-         i=i+1
+         st.xml= st.xml .. parsed
       end
-      html = html .. const.cT[mode+1]
-      table.insert(htmls, html)
+      st.xml = st.xml .. closingTag(st) 
+      table.insert(st.acc, st.xml)
       file:close()
-      return htmls
+      return st.acc 
    else
       print("Could not open the file")
       return "<p>not found</p>"
